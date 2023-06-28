@@ -56,10 +56,7 @@ export class UserService {
     }
   }
 
-  async signinUser(
-    signIn: SigninUserDto,
-    res: Response,
-  ): Promise<SignInReturnData> {
+  async signinUser(signIn: SigninUserDto, res: Response) {
     const { email, password } = signIn;
 
     const user = await this.userModel.findOne({ email: email });
@@ -86,25 +83,34 @@ export class UserService {
       throw new Error('problem with refresh token');
     }
 
-    const saveRefreshToken = await this.userModel.findOneAndUpdate(
-      { _id: user._id },
-      { $push: { refreshToken: refreshToken } },
-      { new: true },
-    );
+    try {
+      const saveRefreshToken = await this.userModel.findOneAndUpdate(
+        { _id: user._id },
+        { $push: { refreshToken: refreshToken } },
+        { new: true },
+      );
 
-    res.cookie('jwt', refreshToken, {
-      httpOnly: true,
-      sameSite: 'none',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+      res.cookie('jwt', refreshToken, {
+        httpOnly: true,
+        sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000,
+      });
 
-    return {
-      accessToken: token,
-      email: user.email,
-      role: user.roles,
-      id: user._id,
-    };
+      return res.status(200).json({
+        message: 'successfull login',
+        data: saveRefreshToken,
+        token,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
+
+  // async logoutUser() {}
 
   async getAlluser() {
     const user = await this.userModel.find({});

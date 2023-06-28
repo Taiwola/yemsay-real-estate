@@ -7,10 +7,10 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import * as jwt from 'jsonwebtoken';
-import { UserDocument } from '../schema/user.schema';
+import { UserDocument, User, UserRoles } from '../schema/user.schema';
 import { Model } from 'mongoose';
 import { Types } from 'mongoose';
-// import { Token } from 'src/token/jwt.token';
+import { InjectModel } from '@nestjs/mongoose';
 
 interface PayloadObj {
   id: Types.ObjectId;
@@ -22,19 +22,16 @@ interface PayloadObj {
 export class AuthGuard implements CanActivate {
   constructor(
     public reflector: Reflector,
-    public userModel: Model<UserDocument>,
+    @InjectModel(User.name) public userModel: Model<UserDocument>,
   ) {}
 
   async canActivate(context: ExecutionContext) {
-    const role = this.reflector.getAllAndOverride('roles', [
-      context.getHandler,
-      context.getClass,
-    ]);
+    const role = this.reflector.get<UserRoles[]>('roles', context.getHandler());
 
-    if (role.length) {
-      const request = context.switchToHttp().getRequest();
-      const token = request?.headers?.authorization?.split(' ')[1];
+    if (role && role.length > 0) {
       try {
+        const request = context.switchToHttp().getRequest();
+        const token = request?.headers?.authorization?.split(' ')[1];
         const payload = jwt.verify(token, process.env.JWT_SECRET) as PayloadObj;
 
         const user = await this.userModel.findOne({ _id: payload.id });
