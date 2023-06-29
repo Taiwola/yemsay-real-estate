@@ -9,7 +9,6 @@ import { User, userSchema } from './schema/user.schema';
 import { UserService } from './user/user.service';
 import { UserController } from './user/user.controller';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { AuthGuard } from './gaurd/auth.gaurd';
 import { UserInterceptor } from './user/interceptor/user.interceptor';
 
 @Module({

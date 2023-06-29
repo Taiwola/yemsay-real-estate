@@ -12,7 +12,8 @@ import { CreateUserDto, SigninUserDto } from '../dto/createUser.dto';
 import * as bcrypt from 'bcryptjs';
 // import { IsObjectIdDto } from '../dto/param.dto';
 import { Types } from 'mongoose';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { UserReq, UserDec } from './decorators/user.decorators';
 
 interface SignInReturnData {
   accessToken: string;
@@ -110,7 +111,43 @@ export class UserService {
     }
   }
 
-  // async logoutUser() {}
+  async logoutUser(res: Response, req: Request, userId: string) {
+    const token = req?.cookies?.jwt;
+
+    try {
+      if (!token) {
+        throw new Error('no token');
+      }
+
+      const user = await this.userModel.findOne({ _id: userId });
+
+      if (!user) {
+        throw new Error('user does not exist');
+      }
+
+      const foundToken = user.refreshToken.includes(token);
+
+      if (!foundToken) {
+        res.clearCookie('jwt', { httpOnly: true });
+        return res.status(201).json({ message: 'user not logged in' });
+      }
+
+      const updateUser = await this.userModel.findOneAndUpdate(
+        { _id: user._id },
+        { $pull: { refreshToken: token } },
+        { new: true },
+      );
+
+      res.clearCookie('jwt', { httpOnly: true });
+      res.status(200).json({ message: 'user logged out', data: updateUser });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   async getAlluser() {
     const user = await this.userModel.find({});

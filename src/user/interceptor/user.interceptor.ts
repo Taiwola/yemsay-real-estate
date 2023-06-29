@@ -1,6 +1,12 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  NestInterceptor,
+  Injectable,
+} from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
+@Injectable()
 export class UserInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, handler: CallHandler) {
     const request = context.switchToHttp().getRequest();
