@@ -4,6 +4,11 @@ import { User } from './user.schema';
 
 export type PropertyDocument = HydratedDocument<Property>;
 
+export enum PropertyType {
+  LAND = 'LAND',
+  HOUSE = 'HOUSE',
+}
+
 @Schema()
 export class Property {
   @Prop({ type: Mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
@@ -35,6 +40,9 @@ export class Property {
 
   @Prop({ default: false })
   unlisted: boolean;
+
+  @Prop({ required: true })
+  propertyType: PropertyType;
 
   @Prop()
   comments: [

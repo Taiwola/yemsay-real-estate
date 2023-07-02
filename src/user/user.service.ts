@@ -34,6 +34,7 @@ export class UserService {
   // TODO: ADD FORGOT AND RESET PASSWORD
   // TODO: UPDATE USER ACCT
   // TODO: ADD PROFILE IMAGE FOR THE USER
+  //  TODO: ADD A REFRESH SERVICE
 
   async sendMail() {
     const userMail = 'seunolanitori@gmail.com';

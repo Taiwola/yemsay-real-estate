@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CommentDto, CreatePropertyDto } from '../dto/create.property';
@@ -75,7 +76,7 @@ export class PropertyController {
   async updatePropertyDetails(
     @Param('id') id: string,
     @UserDec() user: UserReq,
-    property: UpdatePropertyDto,
+    @Body() property: UpdatePropertyDto,
   ) {
     const userId = user.id.toString();
     return await this.propertyService.updateProperty(property, id, userId);
@@ -98,11 +99,26 @@ export class PropertyController {
     return await this.propertyService.listedProperty(id);
   }
 
+  @Get('listed')
+  async getAllListedProperty() {
+    return await this.propertyService.getAllListedProperty();
+  }
+
   @UseGuards(AuthGuard)
   @UseGuards(AdminGuard)
-  @Patch('listed/:id')
+  @Patch('unlist/:id')
   async unlistedStatusUpdate(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.propertyService.unlistProperty(id);
+  }
+
+  @Get('unlisted')
+  async getAllUnlistedProperty() {
+    return await this.propertyService.getAllUnlistedProperty();
+  }
+
+  @Get('latest/:limit')
+  async getLastestProperties(@Param('limit', ParseIntPipe) limit: number) {
+    return await this.propertyService.getLastestProperties(limit);
   }
 
   @UseGuards(AuthGuard)

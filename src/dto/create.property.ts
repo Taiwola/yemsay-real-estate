@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsPositive,
 } from 'class-validator';
+import { PropertyType } from '../schema/property.schema';
 
 export class CreatePropertyDto {
   @IsString()
@@ -41,6 +42,10 @@ export class CreatePropertyDto {
   @IsNotEmpty()
   @MaxLength(20)
   landSize: string;
+
+  @IsString()
+  @IsNotEmpty()
+  propertyType: PropertyType;
 }
 
 export class CommentDto {

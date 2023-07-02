@@ -26,6 +26,8 @@ export class PropertyService {
   //   TODO: ADD TOTAL RATING
   //   TODO: CREATE LISTED AND UNLISTED PROPERTY
   //   TODO: ADD IMAGES AND VIDEOS TO THE PROPERTY
+  //   TODO: QUERY FOR THE LASTEST PROPERTIES, PRICE RANGE AND PROPERTY TYPES
+  //   TODO: QUERY FOR SEARCH REQUEST
 
   async addProperty(property: CreatePropertyDto, userId: string) {
     // check if the same property exist in db
@@ -97,12 +99,30 @@ export class PropertyService {
     try {
       const updateProperty = await this.propertyService.findOneAndUpdate(
         { _id: id },
-        { ...property },
+        {
+          $set: {
+            name: property?.name,
+            description: property?.description,
+            price: property?.price,
+            address: property?.address,
+            numberOfBathroom: property?.numberOfBathroom,
+            numberOfBedroom: property?.numberOfBedroom,
+            landSize: property?.landSize,
+            propertyType: property?.propertyType,
+            updatedAt: Date.now(),
+          },
+        },
         { new: true },
       );
 
       return updateProperty;
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async addComment(reviews: string, id: string, userId: string) {
@@ -137,7 +157,14 @@ export class PropertyService {
           {
             _id: id,
           },
-          { $push: { comments: { postedBy: userId, reviews } } },
+          {
+            $push: {
+              comments: { postedBy: userId, reviews },
+            },
+            $inc: {
+              numbOfReviews: 1,
+            },
+          },
           { new: true },
         );
       }
@@ -170,6 +197,7 @@ export class PropertyService {
       }
 
       property.comments.splice(commentIndex, 1);
+      property.numbOfReviews -= 1;
       return await property.save();
     } catch (error) {
       console.log(error);
@@ -203,6 +231,10 @@ export class PropertyService {
     }
   }
 
+  async getAllListedProperty() {
+    return await this.propertyService.find({ listed: true }).exec();
+  }
+
   async unlistProperty(id: string) {
     const findProperty = await this.propertyService.findOne({ _id: id });
 
@@ -222,6 +254,24 @@ export class PropertyService {
       console.log(error);
       throw new InternalServerErrorException();
     }
+  }
+
+  async getAllUnlistedProperty() {
+    return await this.propertyService.find({ unlisted: true }).exec();
+  }
+
+  async getLastestProperties(limit: number) {
+    return this.propertyService
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .exec();
+  }
+
+  async getPropertiesInPriceRange(minPrice: number, maxPrice: number) {
+    return await this.propertyService.find({
+      price: { $gte: minPrice, $lte: maxPrice },
+    });
   }
 
   async deleteProperty(id: string) {

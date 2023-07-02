@@ -6,47 +6,51 @@ import {
   IsPositive,
   IsOptional,
 } from 'class-validator';
-
+import { PropertyType } from '../schema/property.schema';
 export class UpdatePropertyDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
-  name: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  address: string;
+  address?: string;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  price: number;
+  price?: number;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  description: string;
+  description?: string;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  numberOfBathroom: number;
+  numberOfBathroom?: number;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  numberOfBedroom: number;
+  numberOfBedroom?: number;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
-  landSize: string;
+  landSize?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  propertyType?: PropertyType;
 }
