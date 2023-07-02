@@ -3,12 +3,15 @@ import {
   HttpException,
   HttpStatus,
   UnauthorizedException,
+  InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Property, PropertyDocument } from '../schema/property.schema';
 import { CreatePropertyDto } from '../dto/create.property';
 import { User, UserDocument } from '../schema/user.schema';
+import { UpdatePropertyDto } from 'src/dto/update.property';
 
 @Injectable()
 export class PropertyService {
@@ -74,6 +77,32 @@ export class PropertyService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async updateProperty(
+    property: UpdatePropertyDto,
+    id: string,
+    userId: string,
+  ) {
+    const findProperty = await this.propertyService.findOne({ _id: id });
+
+    if (!findProperty) {
+      throw new NotFoundException("Property doesn't exists");
+    }
+    // check for owner of the post or admin to edit it
+    if (userId !== findProperty.user.toString()) {
+      throw new UnauthorizedException();
+    }
+
+    try {
+      const updateProperty = await this.propertyService.findOneAndUpdate(
+        { _id: id },
+        { ...property },
+        { new: true },
+      );
+
+      return updateProperty;
+    } catch (error) {}
   }
 
   async addComment(reviews: string, id: string, userId: string) {
@@ -149,5 +178,64 @@ export class PropertyService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async listedProperty(id: string) {
+    const findProperty = await this.propertyService.findOne({ _id: id });
+
+    if (!findProperty) {
+      throw new HttpException(
+        'Property does not exist',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    try {
+      const listedProperty = await this.propertyService.findOneAndUpdate(
+        { _id: id },
+        { $set: { listed: true, unlisted: false } },
+        { new: true },
+      );
+
+      return listedProperty;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async unlistProperty(id: string) {
+    const findProperty = await this.propertyService.findOne({ _id: id });
+
+    if (!findProperty) {
+      throw new NotFoundException('Property Not Found');
+    }
+
+    try {
+      const unlistProperty = await this.propertyService.findOneAndUpdate(
+        { _id: id },
+        { $set: { listed: false, unlisted: true } },
+        { new: true },
+      );
+
+      return unlistProperty;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async deleteProperty(id: string) {
+    const findProperty = await this.propertyService.findOne({ _id: id });
+
+    if (!findProperty) {
+      throw new NotFoundException('Property Not Found');
+    }
+
+    try {
+      const propertyToDelete = await this.propertyService.findOneAndRemove({
+        _id: id,
+      });
+      return propertyToDelete;
+    } catch (error) {}
   }
 }

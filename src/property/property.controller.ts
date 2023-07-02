@@ -6,6 +6,7 @@ import {
   Get,
   Param,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CommentDto, CreatePropertyDto } from '../dto/create.property';
@@ -18,6 +19,7 @@ import { AuthGuard } from '../gaurd/auth.gaurd';
 import { RolesGuard } from '../gaurd/roles.gaurd';
 import { ParseObjectIdPipe } from 'src/validateID/validate-id';
 import { json } from 'body-parser';
+import { UpdatePropertyDto } from 'src/dto/update.property';
 
 @Controller('property')
 export class PropertyController {
@@ -69,6 +71,16 @@ export class PropertyController {
     return await this.propertyService.addComment(reviews, id, userId);
   }
 
+  @Patch('update/:id')
+  async updatePropertyDetails(
+    @Param('id') id: string,
+    @UserDec() user: UserReq,
+    property: UpdatePropertyDto,
+  ) {
+    const userId = user.id.toString();
+    return await this.propertyService.updateProperty(property, id, userId);
+  }
+
   @UseGuards(AuthGuard)
   @Patch('comment/remove/:id')
   async removeComment(
@@ -77,5 +89,26 @@ export class PropertyController {
   ) {
     const userId = user.id.toString();
     return await this.propertyService.removeComment(id, userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
+  @Patch('listed/:id')
+  async listedStatusUpdate(@Param('id', ParseObjectIdPipe) id: string) {
+    return await this.propertyService.listedProperty(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
+  @Patch('listed/:id')
+  async unlistedStatusUpdate(@Param('id', ParseObjectIdPipe) id: string) {
+    return await this.propertyService.unlistProperty(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
+  @Delete('delete/:id')
+  async deleteProperty(@Param('id', ParseObjectIdPipe) id: string) {
+    return await this.propertyService.deleteProperty(id);
   }
 }
