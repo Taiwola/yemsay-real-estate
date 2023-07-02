@@ -72,4 +72,9 @@ export class UserController {
     console.log(user);
     return this.userService.deleteUser(id);
   }
+
+  @Post('mail')
+  sendMail() {
+    return this.userService.sendMail();
+  }
 }

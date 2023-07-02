@@ -11,23 +11,35 @@ import { Token } from '../token/jwt.token';
 import { CreateUserDto, SigninUserDto } from '../dto/createUser.dto';
 import * as bcrypt from 'bcryptjs';
 // import { IsObjectIdDto } from '../dto/param.dto';
-import { Types } from 'mongoose';
+// import { Types } from 'mongoose';
 import { Response, Request } from 'express';
-import { UserReq, UserDec } from './decorators/user.decorators';
+import { MailService } from './mailer/sendMail';
 
-interface SignInReturnData {
-  accessToken: string;
-  email: string;
-  role: string;
-  id: Types.ObjectId;
-}
+// interface SignInReturnData {
+//   accessToken: string;
+//   email: string;
+//   role: string;
+//   id: Types.ObjectId;
+// }
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtToken: Token,
+    private mailService: MailService,
   ) {}
+
+  // TODO: ADD MAILING SERVICE
+  // TODO: ADD FORGOT AND RESET PASSWORD
+  // TODO: UPDATE USER ACCT
+  // TODO: ADD PROFILE IMAGE FOR THE USER
+
+  async sendMail() {
+    const userMail = 'seunolanitori@gmail.com';
+    const senderMail = 'seunolanitori@hotmail.com';
+    return this.mailService.sendMail(userMail, senderMail);
+  }
 
   async createUser(createUser: CreateUserDto) {
     const userExist = await this.userModel.findOne({ email: createUser.email });

@@ -16,11 +16,20 @@ export class User {
   @Prop({ required: true })
   password: string;
 
+  @Prop({
+    default:
+      'https://toppng.com/uploads/preview/file-svg-profile-icon-vector-11562942678pprjdh47a8.png',
+  })
+  profileImg: string;
+
   @Prop({ default: UserRoles.USER })
   roles: UserRoles;
 
   @Prop()
   refreshToken: Array<string>;
+
+  @Prop({ default: Date.now })
+  createdAt: Date;
 }
 
 export const userSchema = SchemaFactory.createForClass(User);
